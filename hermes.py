@@ -11,19 +11,39 @@ IMAGE_FILE = "test.png"
 
 
 
-def create_graph():
+def create_graph(graph_label, y_axis_label, labels, values):
+    N = len(values)
+    indexes = np.arange(N)
+
     fig = plt.figure()
-    x = np.linspace(0, 2*np.pi, 100)
-    y = np.sin(x)
-    plt.plot(x, y)
-    plt.xlabel("x")
-    plt.ylabel("sin(x)")
+    plt.xlabel("guide name")
+    plt.ylabel(y_axis_label)
+    plt.grid(True)
+    plt.xticks(indexes, labels)
+    locs, plt_labels = plt.xticks()
+    plt.setp(plt_labels, rotation=90)
+    plt.bar(indexes, values, 0.80, color='yellow', edgecolor='black', label=graph_label)
+    #plt.legend(loc='lower right')
+    for tick in plt_labels:
+        tick.set_horizontalalignment("left")
+        tick.set_verticalalignment("top")
+    plt.tick_params(axis='x', which='major', labelsize=10)
+    fig.subplots_adjust(bottom=0.4)
+    fig.suptitle(graph_label)
     return fig
 
 
 
 def save_graph(fig, imageFile):
-    plt.savefig(imageFile)
+    plt.savefig(imageFile, facecolor=fig.get_facecolor())
+
+
+
+def generate_graph(product, name, stats):
+    labels = [key for key,val in stats.items()]
+    values = [val[name] for key,val in stats.items()]
+    fig = create_graph(product, name, labels, values)
+    save_graph(fig, name + ".png")
 
 
 
@@ -44,6 +64,15 @@ def read_job_list(jenkins_url, view_name):
     job_list = [job["name"] for job in data["jobs"]]
     list.sort(job_list)
     return job_list
+
+
+
+def read_product(job_list):
+    for job in job_list:
+        if job.startswith("doc-"):
+            splitted = job.split("-")
+            return splitted[1].replace("_", " ")
+    return None
 
 
 

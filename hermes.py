@@ -41,7 +41,9 @@ def read_job_list(jenkins_url, view_name):
     url = job_list_url(jenkins_url, view_name)
     response = urllib.urlopen(url)
     data = json.loads(response.read())
-    return (job["name"] for job in data["jobs"])
+    job_list = [job["name"] for job in data["jobs"]]
+    list.sort(job_list)
+    return job_list
 
 
 
@@ -57,11 +59,35 @@ def parse_last_number(line):
 
 
 
+def find_space_near_middle(s):
+    middle = len(s)/2
+    for i in range(middle-1):
+        if s[middle+i] == " ":
+            return middle+i
+        if s[middle-i] == " ":
+            return middle-i
+    return None
+
+
+
+def wrap_near_middle(s):
+    space = find_space_near_middle(s)
+    if space:
+        return s[:space] + "\n" + s[space+1:]
+    else:
+        return s
+
+
+
 def parse_book_name(job_name):
     if job_name.startswith("doc-") and job_name.endswith(" (style-checker)"):
+        splitted = job_name.split("-")
         updated_name = job_name[len("doc-"): -len(" (style-checker)")]
         if updated_name:
-            return updated_name.replace("-", " ").replace("_", " ")
+            splitted = updated_name.split("-")
+            joined = str.join("-", splitted[2:]).replace("_", " ")
+            wrapped = wrap_near_middle(joined)
+            return wrapped
         else:
             return None
     else:
@@ -83,8 +109,6 @@ def read_style_stat(jenkins_url, view_name, job_name, names):
                 stat[name] = parse_number(line)
             if line.startswith("Lix: "):
                 stat["school year"] = parse_last_number(line)
-            
-        #print line
     return stat
 
 
@@ -111,13 +135,17 @@ def main():
 
     names = ["Kincaid", "ARI", "Coleman-Liau", "Flesch Index", "Fog Index", "Lix", "SMOG-Grading"]
     job_list = read_job_list(args.jenkins_url, args.view)
+    product = read_product(job_list)
+    stats = {}
     for job in job_list:
         stat = read_style_stat(args.jenkins_url, args.view, job, names)
-        print(stat)
-    
-    
-    #fig = create_graph()
-    #save_graph(fig, IMAGE_FILE)
+        stats[stat["book_name"]] = stat
+
+    names.append("school year")
+    for name in names:
+        generate_graph(product, name, stats)
+
+
 
 # Vstupni bod
 if __name__ == "__main__":

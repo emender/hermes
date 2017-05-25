@@ -27,8 +27,18 @@ def save_graph(fig, imageFile):
 
 
 
+def job_list_url(jenkins_url, view_name):
+    return jenkins_url + "/view/" + view_name + "/api/json?pretty=true"
+
+
+
+def computed_stat_url(jenkins_url, view_name, job_name):
+    return jenkins_url + "/view/" + view_name + "/job/" + job_name + "/lastSuccessfulBuild/artifact/tmp/en-US/txt/style.txt"
+
+
+
 def read_job_list(jenkins_url, view_name):
-    url = jenkins_url + "/view/" + view_name + "/api/json?pretty=true"
+    url = job_list_url(jenkins_url, view_name)
     response = urllib.urlopen(url)
     data = json.loads(response.read())
     return (job["name"] for job in data["jobs"])
@@ -57,8 +67,10 @@ def parse_book_name(job_name):
     else:
         return None
 
+
+
 def read_style_stat(jenkins_url, view_name, job_name, names):
-    url = jenkins_url + "/view/" + view_name + "/job/" + job_name + "/lastSuccessfulBuild/artifact/tmp/en-US/txt/style.txt"
+    url = computed_stat_url(jenkins_url, view_name, job_name)
     fin = urllib.urlopen(url)
     content = fin.read().split("\n")
     stat = {}
@@ -77,18 +89,6 @@ def read_style_stat(jenkins_url, view_name, job_name, names):
 
 
 
-"""
-Kincaid: 9.4
-        ARI: 10.7
-        Coleman-Liau: 12.5
-        Flesch Index: 55.7/100
-        Fog Index: 12.0
-        Lix: 44.6 = school year 8
-        SMOG-Grading: 11.2
-"""
-
-
-
 def read_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-j", "--jenkins-url", help="URL to Jenkins instance")
@@ -102,6 +102,8 @@ def check_args(args):
         exit("-j/--jenkins-url argument is mandatory")
     if not args.view:
         exit("-v/--view argument is mandatory")
+
+
 
 def main():
     args = read_args()

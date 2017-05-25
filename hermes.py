@@ -36,8 +36,14 @@ def read_job_list(jenkins_url, view_name):
 
 
 def parse_number(line):
-    parsed = re.match(r"[a-zA-Z]+: ([0-9.]+)", line)
+    parsed = re.match(r"[- a-zA-Z]+: ([0-9.]+)", line)
     return float(parsed.group(1))
+
+
+
+def parse_last_number(line):
+    parsed = re.match(r"[- a-zA-Z]+: .* ([0-9.]+)$", line)
+    return int(parsed.group(1))
 
 
 
@@ -52,6 +58,8 @@ def read_style_stat(jenkins_url, view_name, job_name, names):
         for name in names:
             if line.startswith(name + ": "):
                 stat[name] = parse_number(line)
+            if line.startswith("Lix: "):
+                stat["school year"] = parse_last_number(line)
             
         #print line
     return stat
@@ -88,7 +96,7 @@ def main():
     args = read_args()
     check_args(args)
 
-    names = ["Kincaid", "ARI"]
+    names = ["Kincaid", "ARI", "Coleman-Liau", "Flesch Index", "Fog Index", "Lix", "SMOG-Grading"]
     job_list = read_job_list(args.jenkins_url, args.view)
     for job in job_list:
         stat = read_style_stat(args.jenkins_url, args.view, job, names)

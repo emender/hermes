@@ -5,9 +5,7 @@ import numpy as np
 import json
 import urllib
 import re
-
-JENKINS_URL = ""
-VIEW_NAME = ""
+import argparse
 
 IMAGE_FILE = "test.png"
 
@@ -59,6 +57,7 @@ def read_style_stat(jenkins_url, view_name, job_name, names):
     return stat
 
 
+
 """
 Kincaid: 9.4
         ARI: 10.7
@@ -70,11 +69,29 @@ Kincaid: 9.4
 """
 
 
+
+def read_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-j", "--jenkins-url", help="URL to Jenkins instance")
+    parser.add_argument("-v", "--view", help="Jenkins view with job for doc statistic")
+    return parser.parse_args()
+
+
+
+def check_args(args):
+    if not args.jenkins_url:
+        exit("-j/--jenkins-url argument is mandatory")
+    if not args.view:
+        exit("-v/--view argument is mandatory")
+
 def main():
+    args = read_args()
+    check_args(args)
+
     names = ["Kincaid", "ARI"]
-    job_list = read_job_list(JENKINS_URL, VIEW_NAME)
+    job_list = read_job_list(args.jenkins_url, args.view)
     for job in job_list:
-        stat = read_style_stat(JENKINS_URL, VIEW_NAME, job, names)
+        stat = read_style_stat(args.jenkins_url, args.view, job, names)
         print(stat)
     
     

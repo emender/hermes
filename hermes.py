@@ -47,12 +47,23 @@ def parse_last_number(line):
 
 
 
+def parse_book_name(job_name):
+    if job_name.startswith("doc-") and job_name.endswith(" (style-checker)"):
+        updated_name = job_name[len("doc-"): -len(" (style-checker)")]
+        if updated_name:
+            return updated_name.replace("-", " ").replace("_", " ")
+        else:
+            return None
+    else:
+        return None
+
 def read_style_stat(jenkins_url, view_name, job_name, names):
     url = jenkins_url + "/view/" + view_name + "/job/" + job_name + "/lastSuccessfulBuild/artifact/tmp/en-US/txt/style.txt"
     fin = urllib.urlopen(url)
     content = fin.read().split("\n")
     stat = {}
     stat["job_name"] = job_name
+    stat["book_name"] = parse_book_name(job_name)
     for line in content:
         line = line.strip()
         for name in names:

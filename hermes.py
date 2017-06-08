@@ -10,7 +10,6 @@ import argparse
 IMAGE_FILE = "test.png"
 
 
-
 def create_graph(graph_label, y_axis_label, labels, values):
     N = len(values)
     indexes = np.arange(N)
@@ -22,8 +21,9 @@ def create_graph(graph_label, y_axis_label, labels, values):
     plt.xticks(indexes, labels)
     locs, plt_labels = plt.xticks()
     plt.setp(plt_labels, rotation=90)
-    plt.bar(indexes, values, 0.80, color='yellow', edgecolor='black', label=graph_label)
-    #plt.legend(loc='lower right')
+    plt.bar(indexes, values, 0.80, color='yellow',
+            edgecolor='black', label=graph_label)
+    # plt.legend(loc='lower right')
     for tick in plt_labels:
         tick.set_horizontalalignment("left")
         tick.set_verticalalignment("top")
@@ -33,28 +33,24 @@ def create_graph(graph_label, y_axis_label, labels, values):
     return fig
 
 
-
 def save_graph(fig, imageFile):
     plt.savefig(imageFile, facecolor=fig.get_facecolor())
 
 
-
 def generate_graph(product, name, stats):
-    labels = [key for key,val in stats.items()]
-    values = [val[name] for key,val in stats.items()]
+    labels = [key for key, val in stats.items()]
+    values = [val[name] for key, val in stats.items()]
     fig = create_graph(product, name, labels, values)
     save_graph(fig, name + ".png")
-
 
 
 def job_list_url(jenkins_url, view_name):
     return jenkins_url + "/view/" + view_name + "/api/json?pretty=true"
 
 
-
 def computed_stat_url(jenkins_url, view_name, job_name):
-    return jenkins_url + "/view/" + view_name + "/job/" + job_name + "/lastSuccessfulBuild/artifact/tmp/en-US/txt/style.txt"
-
+    return jenkins_url + "/view/" + view_name + "/job/"
+    + job_name + "/lastSuccessfulBuild/artifact/tmp/en-US/txt/style.txt"
 
 
 def read_job_list(jenkins_url, view_name):
@@ -66,7 +62,6 @@ def read_job_list(jenkins_url, view_name):
     return job_list
 
 
-
 def read_product(job_list):
     for job in job_list:
         if job.startswith("doc-"):
@@ -75,17 +70,14 @@ def read_product(job_list):
     return None
 
 
-
 def parse_number(line):
     parsed = re.match(r"[- a-zA-Z]+: ([0-9.]+)", line)
     return float(parsed.group(1))
 
 
-
 def parse_last_number(line):
     parsed = re.match(r"[- a-zA-Z]+: .* ([0-9.]+)$", line)
     return int(parsed.group(1))
-
 
 
 def find_space_near_middle(s):
@@ -98,14 +90,12 @@ def find_space_near_middle(s):
     return None
 
 
-
 def wrap_near_middle(s):
     space = find_space_near_middle(s)
     if space:
         return s[:space] + "\n" + s[space+1:]
     else:
         return s
-
 
 
 def parse_book_name(job_name):
@@ -121,7 +111,6 @@ def parse_book_name(job_name):
             return None
     else:
         return None
-
 
 
 def read_style_stat(jenkins_url, view_name, job_name, names):
@@ -141,13 +130,12 @@ def read_style_stat(jenkins_url, view_name, job_name, names):
     return stat
 
 
-
 def read_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-j", "--jenkins-url", help="URL to Jenkins instance")
-    parser.add_argument("-v", "--view", help="Jenkins view with job for doc statistic")
+    parser.add_argument("-v", "--view",
+                        help="Jenkins view with job for doc statistic")
     return parser.parse_args()
-
 
 
 def check_args(args):
@@ -157,12 +145,12 @@ def check_args(args):
         exit("-v/--view argument is mandatory")
 
 
-
 def main():
     args = read_args()
     check_args(args)
 
-    names = ["Kincaid", "ARI", "Coleman-Liau", "Flesch Index", "Fog Index", "Lix", "SMOG-Grading"]
+    names = ["Kincaid", "ARI", "Coleman-Liau", "Flesch Index", "Fog Index",
+             "Lix", "SMOG-Grading"]
     job_list = read_job_list(args.jenkins_url, args.view)
     product = read_product(job_list)
     stats = {}
@@ -175,8 +163,6 @@ def main():
         generate_graph(product, name, stats)
 
 
-
 # Vstupni bod
 if __name__ == "__main__":
     main()
-
